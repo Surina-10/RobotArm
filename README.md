@@ -203,3 +203,4 @@ Genesis needs a CPU with AVX and, for speed, an NVIDIA GPU.
   `lss_arm_description` package in
   [Lynxmotion/LSS-ROS2-Arms](https://github.com/Lynxmotion/LSS-ROS2-Arms),
   Apache-2.0.
+ - **Research mentorship:** This project was done at Loyola University Chicago under Prof. Neil Klingensmith.
