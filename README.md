@@ -44,6 +44,8 @@ physical arm.
 Genesis renders of my arm, and a task that drives it to 5 random targets,
 finishing within 0.6–2.0 mm of each with no collisions.
 
+![Distance to target over time](media/reach_distance.png)
+
 ![Arm in Genesis](https://github.com/Surina-10/robot_single_arm_testing/raw/main/outputs/arm_check/4dof_three_quarter.png)
 
 Videos: [dot 0](https://github.com/Surina-10/robot_single_arm_testing/blob/main/outputs/reach/reach_4dof_dot0.mp4) ·
@@ -64,6 +66,9 @@ Videos: [dot 0](https://github.com/Surina-10/robot_single_arm_testing/blob/main/
 | `gen_and_train.py` | Collects randomized simulation rollouts (with joint-noise domain randomization) |
 | `eval_sim.py` | Evaluates the trained policy and records a video |
 | `plot_obs.py` | Plots recorded simulation observations to `simulation_plot.png` |
+| `train_logged.py` | Runs `train.py`'s environment and PPO with a 200-step episode limit and logs each episode for a learning curve |
+| `plot_training.py` | Plots the learning curve from `train_logged.py`'s log |
+| `plot_reach_distance.py` | Plots `media/reach_distance.png` from the reach-task data |
 | `deploy_real.py` | Runs the policy on the physical arm |
 | `ik_teleop.py`, `record_joints.py` | ROS 2 inverse-kinematics teleop and joint recording |
 | `training_dataset.csv` | Target position → joint angles (`target_x,target_y,target_z,q1..q4,q5_claw`) |
