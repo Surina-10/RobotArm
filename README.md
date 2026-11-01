@@ -40,6 +40,17 @@ physical arm.
 |---|---|
 | [`trained_arm_eval.mp4`](trained_arm_eval.mp4) | ![Simulation plot](simulation_plot.png) |
 
+**PPO training** (`train_logged.py`: my `train.py` environment and PPO settings,
+run for 500k steps with a 200-step limit per episode so progress can be measured):
+
+![Training curve](media/training_curve.png)
+
+Over 500k steps the policy's average final distance to the target dropped from
+about 104 mm to about 75 mm, and it reached the target (within 2 cm) about 4% of
+the time, up from 2%. It is learning, but not yet reliable. Next I want to try
+reward shaping and longer training. Recreate the graph with
+`python plot_training.py logs/training_500k.monitor.csv`.
+
 **Reach-task simulation** (built by collaborator Griffen Lee, see Credits):
 Genesis renders of my arm, and a task that drives it to 5 random targets,
 finishing within 0.6–2.0 mm of each with no collisions.

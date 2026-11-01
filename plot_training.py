@@ -16,25 +16,29 @@ import matplotlib.pyplot as plt
 LOG = sys.argv[1]
 OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "media", "training_curve.png")
-WINDOW = 25  # episodes in the rolling average
+WINDOW = 25  # episodes in the rolling average (raised to n/25 for long runs)
 
 BLUE, BLUE_LIGHT = "#2a78d6", "#9ec5f4"
 INK, INK2, GRID, AXIS, BG = "#0b0b0b", "#52514e", "#e6e5e1", "#b5b4ae", "#fcfcfb"
 
 rows = list(csv.DictReader(l for l in open(LOG) if not l.startswith("#")))
-steps, dist = [], []
+steps, dist, reached = [], [], []
 total = 0
 for r in rows:
     total += int(r["l"])
     steps.append(total / 1000)
     dist.append(float(r["distance"]) * 1000)
+    reached.append(int(r["l"]) < 200)  # train.py ends an episode early only on reaching the target
+WINDOW = max(WINDOW, len(rows) // 25)
 
 avg = [sum(dist[max(0, i - WINDOW + 1):i + 1]) / len(dist[max(0, i - WINDOW + 1):i + 1])
        for i in range(len(dist))]
 n = len(dist)
-first = sum(dist[:WINDOW]) / min(WINDOW, n)
-last = sum(dist[-WINDOW:]) / min(WINDOW, n)
-hits = sum(d < 20 for d in dist[-WINDOW:])
+tenth = max(1, n // 10)
+first = sum(dist[:tenth]) / tenth
+last = sum(dist[-tenth:]) / tenth
+hit_first = 100 * sum(reached[:tenth]) / tenth
+hit_last = 100 * sum(reached[-tenth:]) / tenth
 
 fig, ax = plt.subplots(figsize=(9, 5.2), dpi=200, facecolor=BG)
 ax.set_facecolor(BG)
@@ -42,7 +46,7 @@ ax.scatter(steps, dist, s=10, color=BLUE_LIGHT, linewidths=0, zorder=2)
 ax.plot(steps, avg, color=BLUE, lw=2, zorder=3)
 ax.axhline(20, color=INK2, lw=1, ls=(0, (4, 3)))
 ax.text(steps[-1], 21, "success: within 20 mm", ha="right", va="bottom", color=INK2, fontsize=9)
-ax.annotate(f"{last:.0f} mm average,\nlast {WINDOW} episodes", xy=(steps[-1], avg[-1]),
+ax.annotate(f"{avg[-1]:.0f} mm", xy=(steps[-1], avg[-1]),
             xytext=(-8, 18), textcoords="offset points", ha="right", color=INK, fontsize=9)
 ax.set_xlim(0, steps[-1] * 1.01)
 ax.set_ylim(0, max(dist) * 1.05)
@@ -58,10 +62,10 @@ ax.tick_params(colors=INK2, labelsize=9)
 fig.suptitle(f"PPO training: final distance to target per episode ({n} episodes)",
              x=0.07, ha="left", fontsize=13, color=INK, fontweight="bold")
 ax.set_title(f"Dots: one episode each (max 200 steps). Line: {WINDOW}-episode average.\n"
-             f"Average went from {first:.0f} mm to {last:.0f} mm; "
-             f"{hits}/{min(WINDOW, n)} of the last episodes succeeded.",
+             f"First vs last 10% of training: average {first:.0f} mm -> {last:.0f} mm; "
+             f"reached the target {hit_first:.0f}% -> {hit_last:.0f}% of the time.",
              loc="left", fontsize=8.5, color=INK2)
 fig.tight_layout()
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 fig.savefig(OUT, facecolor=BG)
-print(f"saved {OUT}: {n} episodes, avg {first:.0f} -> {last:.0f} mm, last-{WINDOW} hits {hits}")
+print(f"saved {OUT}: {n} episodes, avg {first:.0f} -> {last:.0f} mm, reached {hit_first:.0f}% -> {hit_last:.0f}%")
